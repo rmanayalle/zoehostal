@@ -28,6 +28,12 @@ const type = `
     registro: HabitacionRegistro
   }
 
+  type HabitacionOcupado {
+    nombre: String
+    tipo: String
+    deuda: Float
+  }
+
   input HabitacionPartialInput {
     nombre: String
     tipo: String

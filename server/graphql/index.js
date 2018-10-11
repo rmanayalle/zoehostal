@@ -8,6 +8,7 @@ const logicReniec = require('../logic/reniec');
 const rootQuery = `
   type rootQuery {
     habitacion(habitacion: HabitacionPartialInput!): [Habitacion]
+    habitacionOcupado: [HabitacionOcupado]
     cliente(cliente: ClienteInput!): Cliente
     presupuestar(habitacion: HabitacionPartialInput!, fechaInicio: Date!, fechaFinal: Date!): Presupuesto
     reniec(documentoNacional: String!): Cliente
@@ -34,6 +35,9 @@ const resolvers = {
     },
     reniec(obj, args, context, info){
       return logicReniec.getClienteFromReniec(args.documentoNacional);
+    },
+    habitacionOcupado(obj, args, context, info){
+      return logicHabitacion.getHabitacionOcupado();
     }
   },
   rootMutation: {
