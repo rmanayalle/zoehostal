@@ -1,6 +1,6 @@
-/*import React, { Component } from 'react'
-
+import React, { Component } from 'react'
 import { withStyles } from '@material-ui/core/styles';
+import { Query } from "react-apollo";
 
 import List from '@material-ui/core/List';
 import ListItem from '@material-ui/core/ListItem';
@@ -9,6 +9,9 @@ import ListItemSecondaryAction from '@material-ui/core/ListItemSecondaryAction';
 import IconButton from '@material-ui/core/IconButton';
 import ViewModule from '@material-ui/icons/ViewModule';
 import Avatar from '@material-ui/core/Avatar';
+
+import { withTwoDecimal } from '../util/number'
+import { GET_HABITACION } from '../util/query'
 
 function getAvatarClass(tipo, classes){
   let firstLetter = tipo.charAt(0).toUpperCase();
@@ -27,10 +30,6 @@ function getAvatarClass(tipo, classes){
   }
 
   return <Avatar className={classTipoLetra}>{firstLetter}</Avatar>;
-}
-
-function withTwoDecimal(number){
-  return parseFloat(Math.round(number * 100) / 100).toFixed(2);
 }
 
 const styles = theme => ({
@@ -55,36 +54,68 @@ const styles = theme => ({
 });
 
 class ListHabitacionOcupado extends Component {
+  constructor(props){
+    super(props);
+
+    this.state = {
+      showDialog: false,
+      habitacion: null
+    };
+  }
+
+  handleOpen = (habitacion) => {
+    this.setState({
+      showDialog: true,
+      habitacion: habitacion
+    });
+  }
+
+  handleClose = () => {
+    this.setState({
+      showDialog: false,
+      habitacion: null
+    });
+  }
 
   render(){
     const {
-      classes,
-      habitacion
+      classes
     } = this.props;
 
     return (
       <React.Fragment>
-        <List>
-          {
-            habitacion.map(iHabitacion => (
-              <ListItem key={iHabitacion.nombre}>
-                {getAvatarClass(iHabitacion.tipo, classes)}
-                <ListItemText
-                  primary={iHabitacion.nombre}
-                  secondary={iHabitacion.deuda > 0 && 'S/ ' + withTwoDecimal(iHabitacion.deuda)}
-                />
-                <ListItemSecondaryAction>
-                  <IconButton>
-                    <ViewModule />
-                  </IconButton>
-                </ListItemSecondaryAction>
-              </ListItem>
-            ))
+        <Query query={GET_HABITACION} variables={{"habitacion":{"estado":"ocupado"}}} pollInterval={500}>
+        {
+          ({ loading, error, data }) => {
+            if (loading) return <p>Loading...</p>;
+            if (error) return <p>Error :(</p>;
+
+            return (
+              <List>
+              {
+                data.habitacion.map(habitacion => (
+                  <ListItem key={habitacion.nombre}>
+                    {getAvatarClass(habitacion.tipo, classes)}
+                    <ListItemText
+                      primary={habitacion.nombre}
+                      secondary={habitacion.deuda > 0 && 'S/ ' + withTwoDecimal(habitacion.deuda)}
+                    />
+                    <ListItemSecondaryAction>
+                      <IconButton>
+                        <ViewModule />
+                      </IconButton>
+                    </ListItemSecondaryAction>
+                  </ListItem>
+                ))
+              }
+              </List>
+            );
           }
-        </List>
+        }
+        </Query>
       </React.Fragment>
     );
   }
 }
 
-export default withStyles(styles)(ListHabitacionOcupado);*/
+export default withStyles(styles)(ListHabitacionOcupado);

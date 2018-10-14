@@ -9,25 +9,14 @@ function zeroDate(fecha){
   );
 }
 
-function withCheckOutFormat(fecha, checkOut){
+function withCheckFormat(fecha, check){
   return new Date(
     fecha.getFullYear(),
     fecha.getMonth(),
     fecha.getDate(),
-    checkOut.getHours(),
-    checkOut.getMinutes(),
-    checkOut.getSeconds()
-  );
-}
-
-function withCheckInFormat(fecha, checkIn){
-  return new Date(
-    fecha.getFullYear(),
-    fecha.getMonth(),
-    fecha.getDate(),
-    checkIn.getHours(),
-    checkIn.getMinutes(),
-    checkIn.getSeconds()
+    check.getHours(),
+    check.getMinutes(),
+    check.getSeconds()
   );
 }
 
@@ -42,12 +31,50 @@ function isSameDay(fecha1, fecha2){
 }
 
 function diffDays(fechaInicio, fechaFinal){
-  let timeDiff = Math.abs(fechaFinal.getTime() - fechaInicio.getTime());
-  return Math.ceil(timeDiff / (1000 * 3600 * 24));
+  let timeDiff = fechaFinal.getTime() - fechaInicio.getTime();
+  return timeDiff / (1000 * 3600 * 24);
 }
 
 function diffSeconds(fechaInicio, fechaFinal){
   return (fechaFinal.getTime() - fechaInicio.getTime()) / 1000;
+}
+
+function diffHours(fechaInicio, fechaFinal){
+  let timeDiff = fechaFinal.getTime() - fechaInicio.getTime();
+  return timeDiff/(60*60*1000);
+}
+
+function toDate(time){
+  return new Date(time);
+}
+
+function toLocaleString(date){
+  let dateOptions = {
+    weekday: 'long',
+    year: 'numeric',
+    month: 'short',
+    day: 'numeric',
+    hour: 'numeric',
+    minute: 'numeric',
+    hour12: true
+  };
+
+  return date.toLocaleString("es-ES", dateOptions);
+}
+
+function pad(number) {
+  if (number < 10) {
+    return '0' + number;
+  }
+  return number;
+}
+
+function dateToPickerStringFormat(date){
+  return date.getFullYear() +
+          '-' + pad(date.getMonth() + 1) +
+          '-' + pad(date.getDate()) +
+          'T' + pad(date.getHours()) +
+          ':' + pad(date.getMinutes());
 }
 
 module.exports = {
@@ -56,6 +83,9 @@ module.exports = {
   isSameDay,
   diffDays,
   diffSeconds,
-  withCheckInFormat,
-  withCheckOutFormat
+  diffHours,
+  withCheckFormat,
+  toDate,
+  dateToPickerStringFormat,
+  toLocaleString
 };

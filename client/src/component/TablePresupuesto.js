@@ -5,8 +5,8 @@ import TableBody from '@material-ui/core/TableBody'
 import TableCell from '@material-ui/core/TableCell'
 import TableHead from '@material-ui/core/TableHead'
 import TableRow from '@material-ui/core/TableRow'
-import {ToLocaleString, ToDate} from '../util/date'
-import {WithTwoDecimal} from '../util/number'
+import {toLocaleString, toDate} from '../util/date'
+import {withTwoDecimal} from '../util/number'
 
 const TableCellTotalMount = withStyles(theme => ({
   body: {
@@ -42,6 +42,11 @@ const styles = theme => ({
     borderBottomStyle: 'none',
     paddingTop: 15
   },
+  row: {
+    '&:nth-of-type(odd)': {
+      backgroundColor: theme.palette.background.default,
+    },
+  },
 });
 
 class TablePresupuesto extends Component {
@@ -64,18 +69,18 @@ class TablePresupuesto extends Component {
           </TableHead>
         <TableBody>
             {
-              presupuesto.detalle.map(item => (
-                <TableRow>
-                  <TableCell component="th" scope="row">{ToLocaleString(ToDate(item.fechaInicio))}</TableCell>
-                  <TableCell>{ToLocaleString(ToDate(item.fechaFinal))}</TableCell>
-                  <TableCell numeric>{'S/ ' + WithTwoDecimal(item.precio)}</TableCell>
+              presupuesto.detalle.map((item, index) => (
+                <TableRow key={index} className={classes.row}>
+                  <TableCell component="th" scope="row">{toLocaleString(toDate(item.fechaInicio))}</TableCell>
+                  <TableCell>{toLocaleString(toDate(item.fechaFinal))}</TableCell>
+                  <TableCell numeric>{'S/ ' + withTwoDecimal(item.precio)}</TableCell>
                 </TableRow>
               ))
             }
             <TableRow>
               <TableCell className={classes.cellTotal}></TableCell>
               <TableCellTotalText numeric className={classes.cellTotal}>Total</TableCellTotalText>
-              <TableCellTotalMount numeric className={classes.cellTotal}>{'S/ ' + WithTwoDecimal(presupuesto.total)}</TableCellTotalMount>
+              <TableCellTotalMount numeric className={classes.cellTotal}>{'S/ ' + withTwoDecimal(presupuesto.total)}</TableCellTotalMount>
             </TableRow>
           </TableBody>
         </Table>

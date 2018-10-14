@@ -1,12 +1,12 @@
 import React, { Component } from 'react'
 import TextField from '@material-ui/core/TextField'
-import { DateToPickerStringFormat } from '../util/date'
+import { dateToPickerStringFormat } from '../util/date'
 
 class TextFecha extends Component {
   render() {
     const {
       label,
-      text,
+      fecha,
       handleChange,
       ...props
     } = this.props;
@@ -19,7 +19,7 @@ class TextFecha extends Component {
           type="datetime-local"
           margin="dense"
           onChange={handleChange}
-          defaultValue={DateToPickerStringFormat(text)}
+          defaultValue={dateToPickerStringFormat(fecha)}
           InputLabelProps={{
             shrink: true,
           }}

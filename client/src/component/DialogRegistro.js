@@ -1,17 +1,18 @@
 import React, { Component } from 'react'
 import { withStyles } from '@material-ui/core/styles'
-import { ApolloConsumer } from 'react-apollo'
-import TextNumber from './TextNumber'
-import TextFecha from './TextFecha'
-import TablePresupuesto from './TablePresupuesto'
 import Dialog from '@material-ui/core/Dialog'
 import DialogActions from '@material-ui/core/DialogActions'
 import DialogContent from '@material-ui/core/DialogContent'
 import DialogTitle from '@material-ui/core/DialogTitle'
 import Button from '@material-ui/core/Button'
-import IconButton from '@material-ui/core/IconButton'
-import LocalOfferIcon from '@material-ui/icons/LocalOffer'
+
 import { GET_PRESUPUESTO } from '../util/query'
+import { POST_RENT } from '../util/mutation'
+import TextNumber from './TextNumber'
+import TextFecha from './TextFecha'
+import TablePresupuesto from './TablePresupuesto'
+import { withCheckFormat, plusOneDay } from '../util/date'
+import { Mutation } from "react-apollo";
 
 const styles = theme => ({
   button: {
@@ -21,21 +22,97 @@ const styles = theme => ({
 
 class DialogRegistro extends Component {
 
+  constructor(props){
+    super(props);
+
+    this.state = {
+      documentoNacional: "",
+      fechaInicio: new Date(),
+      fechaFinal: withCheckFormat(plusOneDay(new Date()), this.props.checkOut),
+      presupuesto : null
+    };
+
+    this.fetchAndUpdatePresupuesto();
+  }
+
+  componentDidMount() {
+    this.timerID = setInterval(
+      () => this.tick(),
+      1000*30
+    );
+  }
+
+  componentWillUnmount() {
+    clearInterval(this.timerID);
+  }
+
+  tick() {
+    this.setState({
+      fechaInicio: new Date()
+    }, () => {
+      this.fetchAndUpdatePresupuesto();
+    });
+  }
+
+  handleDocumentoNacional = (event) => {
+    this.setState({
+      documentoNacional: event.target.value
+    });
+  }
+
+  handleFechaFinal = (event) => {
+    this.setState({
+      fechaFinal: new Date(event.target.value)
+    }, () => {
+      this.fetchAndUpdatePresupuesto();
+    });
+  }
+
+  fetchAndUpdatePresupuesto = async () => {
+    const { client } = this.props;
+    const { data } = await client.query({
+      query: GET_PRESUPUESTO,
+      variables: {
+        tarifa: this.props.habitacion.tarifa,
+        fechaInicio: this.state.fechaInicio,
+        fechaFinal: this.state.fechaFinal
+      }
+    });
+    this.setState({
+      presupuesto: data.presupuesto
+    });
+  }
+
+  rent = () => {
+    return (
+      <Mutation mutation={POST_RENT}>
+      {(funcRent, { data }) => (
+        <Button
+          onClick={e => {
+            e.preventDefault();
+            funcRent({ variables: {
+              "habitacionNombre": this.props.habitacion.nombre,
+              "documentoNacional": this.state.documentoNacional,
+              "fechaFinal": this.state.fechaFinal
+            } });
+            this.props.handleClose();
+          }}
+          color="primary">
+
+          Registrar
+
+        </Button>
+      )}
+      </Mutation>
+    );
+  }
+
   render() {
 
     const {
       classes,
-      isOpen,
-      habitacionNombre,
-      documentoNacional,
-      fechaInicio,
-      fechaFinal,
-      presupuesto,
-      handleDocumentoNacional,
-      handleFechaFinal,
-      handleSubmit,
-      handleClose,
-      updatePresupuesto
+      showDialog,
+      handleClose
     } = this.props;
 
     return (
@@ -43,7 +120,7 @@ class DialogRegistro extends Component {
         <Dialog
           maxWidth="md"
           scroll="body"
-          open={isOpen}
+          open={showDialog}
           onClose={handleClose}
           aria-labelledby="form-dialog-title"
         >
@@ -56,49 +133,23 @@ class DialogRegistro extends Component {
               style={{width: 245, marginTop: 10, marginBottom: 10}}
               label="Documento Nacional de Identidad"
               autoFocus
-              text={documentoNacional}
-              handleChange={handleDocumentoNacional}
+              number={this.state.documentoNacional}
+              handleChange={this.handleDocumentoNacional}
             />
             <br />
             <TextFecha
               style={{width: 245, marginTop: 10, marginBottom: 10}}
               label="Fecha y Hora de Salida"
-              text={fechaFinal}
-              handleChange={handleFechaFinal}
+              fecha={this.state.fechaFinal}
+              handleChange={this.handleFechaFinal}
             />
-
-            <ApolloConsumer>
-            {client => (
-              <IconButton
-                className={classes.button}
-                aria-label="Refresh"
-                onClick={async () => {
-                  const { data } = await client.query({
-                    query: GET_PRESUPUESTO,
-                    variables: {
-                      "habitacion": {
-                        "nombre": habitacionNombre
-                      },
-                      "fechaInicio": fechaInicio,
-                      "fechaFinal": fechaFinal
-                    }
-                  });
-                  updatePresupuesto(data.presupuestar);
-                }}
-                >
-                <LocalOfferIcon />
-              </IconButton>
-            )}
-            </ApolloConsumer>
-
             {
-              presupuesto !== null && (
+              this.state.presupuesto !== null && (
                 <TablePresupuesto
-                  presupuesto={presupuesto}
+                  presupuesto={this.state.presupuesto}
                 />
               )
             }
-
           </DialogContent>
           <DialogActions>
             <Button
@@ -108,13 +159,9 @@ class DialogRegistro extends Component {
               Cancelar
 
             </Button>
-            <Button
-              onClick={handleSubmit}
-              color="primary">
-
-              Registrar
-
-            </Button>
+            {
+              this.rent()
+            }
           </DialogActions>
         </Dialog>
       </React.Fragment>

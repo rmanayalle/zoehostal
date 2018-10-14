@@ -5,7 +5,7 @@ class TextNumber extends Component {
   render() {
     const {
       label,
-      text,
+      number,
       handleChange,
       ...props
     } = this.props;
@@ -14,7 +14,7 @@ class TextNumber extends Component {
       <TextField
         id="standard-number"
         label={label}
-        value={text}
+        value={number}
         onChange={handleChange}
         type="number"
         InputLabelProps={{

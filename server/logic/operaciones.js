@@ -1,104 +1,108 @@
 const utilDate = require('../util/date.js');
-let modelHabitacion = require('../model/habitacion');
-let logicReniec = require('./reniec');
+const entityHabitacion = require('../entity/habitacion');
+const logicReniec = require('./reniec');
 
-async function presupuestar(habitacion, checkIn, checkOut, fechaInicio, fechaFinal){
-    let result = await modelHabitacion.model.findOne({"nombre": habitacion.nombre}).exec().then((iHabitacion) => {
+function presupuestar(_tarifa, _checkIn, _checkOut, _fechaInicio, _fechaFinal){
+  let dateNowPlus12Hours = new Date();
+  dateNowPlus12Hours = new Date(dateNowPlus12Hours.getTime() + 12*60*60*1000);
 
-      let res = {
-        total: 0,
-        detalle: []
+  let presupuesto = {
+    total: 0,
+    totalNeedsToBeCashed: 0,
+    detalle: []
+  };
+
+  if(_fechaFinal<_fechaInicio)return presupuesto;
+
+
+  let tarifaPerHour = Math.ceil(_tarifa/24);
+
+  if(_fechaInicio < utilDate.withCheckFormat(_fechaInicio,_checkIn)){
+    let diffHoursToCheckIn = Math.floor(utilDate.diffHours(_fechaInicio,utilDate.withCheckFormat(_fechaInicio,_checkIn)));
+    if(diffHoursToCheckIn > 0){
+      let temp = {
+        fechaInicio: _fechaInicio,
+        fechaFinal: utilDate.withCheckFormat(_fechaInicio, _checkIn),
+        precio: diffHoursToCheckIn*tarifaPerHour,
+        needsToBeCashed: false
       };
+      temp.needsToBeCashed = (dateNowPlus12Hours > temp.fechaInicio);
+      presupuesto.detalle.push(temp);
+      presupuesto.total += diffHoursToCheckIn*tarifaPerHour;
+      if(temp.needsToBeCashed === true)presupuesto.totalNeedsToBeCashed += presupuesto.total;
+      _fechaInicio = utilDate.withCheckFormat(_fechaInicio, _checkIn);
+    }
+  }
 
-      if(utilDate.isSameDay(fechaInicio,fechaFinal) === true)fechaFinal = utilDate.withCheckOutFormat(utilDate.plusOneDay(fechaInicio),checkOut);
+  if(utilDate.isSameDay(_fechaInicio,_fechaFinal))_fechaFinal = utilDate.withCheckFormat(utilDate.plusOneDay(_fechaInicio),_checkOut);
 
-      let tarifaPerHour = Math.ceil(iHabitacion.tarifa/24);
+  while(_fechaInicio < utilDate.withCheckFormat(_fechaFinal, _checkOut)){
+    let temp = {
+      fechaInicio: _fechaInicio,
+      fechaFinal: utilDate.withCheckFormat(utilDate.plusOneDay(_fechaInicio), _checkOut),
+      precio: _tarifa,
+      needsToBeCashed: false
+    };
+    temp.needsToBeCashed = (dateNowPlus12Hours > temp.fechaInicio);
+    presupuesto.detalle.push(temp);
+    presupuesto.total += _tarifa;
+    if(temp.needsToBeCashed === true)presupuesto.totalNeedsToBeCashed += presupuesto.total;
+    _fechaInicio = utilDate.withCheckFormat(utilDate.plusOneDay(_fechaInicio), _checkIn);
+  }
 
-      let diffHoursToCheckIn = checkIn.getHours() - fechaInicio.getHours();
-      if(diffHoursToCheckIn <= 0)diffHoursToCheckIn = 0;
-      else{
-        if(fechaInicio.getMinutes() > 15)diffHoursToCheckIn--;
-        res.detalle.push({
-          fechaInicio: fechaInicio,
-          fechaFinal: utilDate.withCheckInFormat(fechaInicio, checkIn),
-          precio: diffHoursToCheckIn*tarifaPerHour
-        });
-        fechaInicio = utilDate.withCheckInFormat(fechaInicio, checkIn);
-        res.total += diffHoursToCheckIn*tarifaPerHour;
-      }
-
-      for(; fechaInicio < utilDate.withCheckOutFormat(fechaFinal, checkOut); fechaInicio = utilDate.withCheckInFormat(utilDate.plusOneDay(fechaInicio), checkIn)){
-        res.detalle.push({
-          fechaInicio: fechaInicio,
-          fechaFinal: utilDate.withCheckOutFormat(utilDate.plusOneDay(fechaInicio), checkOut),
-          precio: iHabitacion.tarifa
-        });
-        res.total += iHabitacion.tarifa;
-      }
-
-      let diffHoursFromCheckOut = fechaFinal.getHours() - checkOut.getHours();
-      if(diffHoursFromCheckOut <= 0)diffHoursFromCheckOut = 0;
-      else{
-        if(fechaFinal.getMinutes() > 15)diffHoursFromCheckOut++;
-        res.detalle.push({
-          fechaInicio: utilDate.withCheckOutFormat(fechaInicio, checkOut),
-          fechaFinal: fechaFinal,
-          precio: diffHoursFromCheckOut*tarifaPerHour
-        });
-        res.total += diffHoursFromCheckOut*tarifaPerHour;
-      }
-      return res;
-    }).catch((err) => {
-      return {
-        total: 0,
-        detalle: []
+  if(_fechaFinal > utilDate.withCheckFormat(_fechaFinal,_checkOut)){
+    let diffHoursFromCheckOut = Math.floor(utilDate.diffHours(utilDate.withCheckFormat(_fechaFinal,_checkOut),_fechaFinal));
+    if(diffHoursFromCheckOut > 0){
+      let temp = {
+        fechaInicio: utilDate.withCheckFormat(_fechaInicio, _checkOut),
+        fechaFinal: _fechaFinal,
+        precio: diffHoursFromCheckOut*tarifaPerHour,
+        needsToBeCashed: false
       };
-    });
-    return result;
+      temp.needsToBeCashed = (dateNowPlus12Hours > temp.fechaInicio);
+      presupuesto.detalle.push(temp);
+      presupuesto.total += diffHoursFromCheckOut*tarifaPerHour;
+      if(temp.needsToBeCashed === true)presupuesto.totalNeedsToBeCashed += presupuesto.total;
+    }
+  }
+  return presupuesto;
 }
 
-async function alquilar(habitacion, cliente, checkIn, checkOut, fechaFinal){
-  return await modelHabitacion.model.findOne({"nombre": habitacion.nombre}).exec().then(async (iHabitacion) => {
+async function rent(_habitacionNombre, _documentoNacional, _checkIn, _checkOut, _fechaFinal){
+  return await entityHabitacion.model.findOne({"nombre": _habitacionNombre}).then(async habitacion => {
     let fechaInicio = new Date();
-    return await presupuestar(iHabitacion, checkIn, checkOut, fechaInicio, fechaFinal).then(async (presupuesto) => {
-
-      let clienteFromReniec = logicReniec.getClienteFromReniec(cliente.documentoNacional);
-
-      iHabitacion.estado = "ocupado";
-      iHabitacion.cliente = clienteFromReniec;
-      iHabitacion.fechaInicio = fechaInicio;
-      iHabitacion.fechaFinal = fechaFinal;
-      iHabitacion.registro = {
-        detalle: [],
-        pago: []
-      };
-      presupuesto.detalle.map(item => {
-        iHabitacion.registro.detalle.push({
-          fechaInicio: item.fechaInicio,
-          fechaFinal: item.fechaFinal,
-          precio: item.precio
-        });
-      });
-      await iHabitacion.save();
-      return iHabitacion;
-    });
-
-  });
-}
-
-async function pagar(habitacion, monto){
-  return await modelHabitacion.model.findOne({"nombre": habitacion.nombre}).then(async habitacion => {
-    habitacion.registro.pago.push({
-      fecha: new Date(),
-      monto: monto
-    });
+    let presupuesto = presupuestar(habitacion.tarifa, _checkIn, _checkOut, fechaInicio, _fechaFinal);
+    habitacion.estado = "ocupado";
+    habitacion.cliente = logicReniec.getClienteFromReniec(_documentoNacional);
+    habitacion.hospedaje = {
+      fechaInicio: fechaInicio,
+      fechaFinal: _fechaFinal,
+      cronologia: presupuesto,
+      pago: {
+        total: 0,
+        detalle: []
+      }
+    };
     await habitacion.save();
     return habitacion;
   });
 }
 
+async function pay(_habitacionNombre, _monto){
+  return await entityHabitacion.model.findOne({"nombre": _habitacionNombre}).then(async habitacion => {
+    let pagoDetalle = {
+      fecha: new Date(),
+      monto: _monto
+    };
+    habitacion.hospedaje.pago.push(pagoDetalle);
+    habitacion.hospedaje.pago.total += _monto;
+    await habitacion.save();
+    return pagoDetalle;
+  });
+}
+
 module.exports = {
-  alquilar,
   presupuestar,
-  pagar
+  rent,
+  pay
 };

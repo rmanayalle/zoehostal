@@ -1,82 +1,65 @@
 import gql from "graphql-tag";
 
-const POST_ALQUILAR = gql`
-  mutation alquilar(
-    $habitacion: HabitacionPartialInput!,
-    $cliente: ClienteInput!,
-    $fechaFinal: Date!
+const POST_RENT = gql`
+mutation rent(
+  $habitacionNombre: String!,
+  $documentoNacional: String!
+  $fechaFinal: Date!
+){
+  rent(
+    habitacionNombre: $habitacionNombre,
+    documentoNacional: $documentoNacional,
+    fechaFinal: $fechaFinal
   ){
-    alquilar(
-      habitacion: $habitacion,
-      cliente: $cliente,
-      fechaFinal: $fechaFinal
-    ){
+    nombre
+    tipo
+    tarifa
+    capacidad
+    estado
+    cliente{
+      documentoNacional
       nombre
-      tipo
-      tarifa
-      capacidad
-      estado
-      cliente{
-        documentoNacional
-        nombre
-        apellidoPaterno
-        apellidoMaterno
-      }
+      apellidoPaterno
+      apellidoMaterno
+    }
+    hospedaje{
       fechaInicio
       fechaFinal
-      registro{
+      cronologia{
+        total
+        totalNeedsToBeCashed
         detalle{
           fechaInicio
           fechaFinal
           precio
+          needsToBeCashed
         }
-        pago{
-          fecha
-          monto
-        }
+      }
+      pago{
+        fecha
+        monto
       }
     }
   }
+}
 `;
 
-const POST_PAGAR = gql`
-  mutation pagar(
-    $habitacion: HabitacionPartialInput!,
-    $monto: Float!
+const POST_PAY = gql`
+mutation pay(
+  $habitacionNombre: String!,
+  $monto: Float!
+){
+  pay(
+    habitacionNombre: $habitacionNombre,
+    monto: $monto
   ){
-    pagar(
-      habitacion: $habitacion,
-      monto: $monto
-    ){
-      nombre
-      tipo
-      tarifa
-      capacidad
-      estado
-      cliente{
-        documentoNacional
-        nombre
-        apellidoPaterno
-        apellidoMaterno
-      }
-      fechaInicio
-      fechaFinal
-      registro{
-        detalle{
-          fechaInicio
-          fechaFinal
-          precio
-        }
-        pago{
-          fecha
-          monto
-        }
-      }
-    }
+    fecha
+    monto
   }
+}
 `;
 
 export {
-  POST_ALQUILAR,
-  POST_PAGAR
+  POST_RENT,
+  POST_PAY
 }

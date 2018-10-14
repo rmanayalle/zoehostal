@@ -1,6 +1,7 @@
 const type = `
   type Presupuesto{
     total: Float
+    totalNeedsToBeCashed: Float
     detalle: [PresupuestoDetalle]
   }
 
@@ -8,6 +9,7 @@ const type = `
     fechaInicio: Date
     fechaFinal: Date
     precio: Float
+    needsToBeCashed: Boolean
   }
 `;
 
