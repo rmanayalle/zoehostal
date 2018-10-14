@@ -1,15 +1,20 @@
 const type = `
 
-  type HabitacionHospedajePago{
+  type HabitacionHospedajePagoDetalle{
     fecha: Date
     monto: Float
+  }
+
+  type HabitacionHospedajePago{
+    total: Float
+    detalle: [HabitacionHospedajePagoDetalle]
   }
 
   type HabitacionHospedaje {
     fechaInicio: Date
     fechaFinal: Date
-    cronologia: [Presupuesto]
-    pago: [HabitacionHospedajePago]
+    cronologia: Presupuesto
+    pago: HabitacionHospedajePago
   }
 
   type Habitacion{

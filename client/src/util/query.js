@@ -1,29 +1,38 @@
 import gql from "graphql-tag";
 
 const GET_HABITACION = gql`
-query habitacion(
-  $habitacion: HabitacionInput!
-){
-  habitacion(
-    habitacion: $habitacion
-  ){
+query habitacion($habitacion: HabitacionInput!) {
+  habitacion(habitacion: $habitacion) {
     nombre
     tipo
     tarifa
     capacidad
     estado
-    cliente{
+    cliente {
       documentoNacional
       nombre
       apellidoPaterno
       apellidoMaterno
     }
-    hospedaje{
+    hospedaje {
       fechaInicio
       fechaFinal
-      pago{
-        fecha
-        monto
+      cronologia {
+        total
+        totalNeedsToBeCashed
+        detalle {
+          fechaInicio
+          fechaFinal
+          precio
+          needsToBeCashed
+        }
+      }
+      pago {
+        total
+        detalle {
+          fecha
+          monto
+        }
       }
     }
   }

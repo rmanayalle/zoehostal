@@ -21,10 +21,13 @@ var schema = new mongoose.Schema({
         needsToBeCashed: Boolean
       }]
     },
-    pago: [{
-      fecha: Date,
-      monto: Number
-    }]
+    pago: {
+      total: Number,
+      detalle: [{
+        fecha: Date,
+        monto: Number
+      }]
+    }
   }
 });
 

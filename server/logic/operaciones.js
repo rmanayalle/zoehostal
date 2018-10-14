@@ -94,7 +94,7 @@ async function pay(_habitacionNombre, _monto){
       fecha: new Date(),
       monto: _monto
     };
-    habitacion.hospedaje.pago.push(pagoDetalle);
+    habitacion.hospedaje.pago.detalle.push(pagoDetalle);
     habitacion.hospedaje.pago.total += _monto;
     await habitacion.save();
     return pagoDetalle;

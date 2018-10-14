@@ -1,5 +1,5 @@
 module.exports = {
   development: {
-    db: 'mongodb://localhost/zoehostal'
+    db: 'mongodb://192.168.0.25/zoehostal'
   }
 };

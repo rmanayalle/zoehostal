@@ -18,7 +18,7 @@ async function getHabitacion(args){
           }
       })
     );
-
+    
     return habitaciones;
   });
 }
