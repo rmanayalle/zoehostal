@@ -42,7 +42,7 @@ query habitacion($habitacion: HabitacionInput!) {
 const GET_PRESUPUESTO = gql`
 query presupuesto(
   $tarifa: Float!,
-  $fechaInicio: Date!,
+  $fechaInicio: Date,
   $fechaFinal: Date!
 ){
   presupuesto(
@@ -62,7 +62,26 @@ query presupuesto(
 }
 `;
 
+const GET_CLIENTE = gql`
+query cliente($documentoNacional: String!) {
+  cliente(documentoNacional: $documentoNacional) {
+    documentoNacional
+    nombre
+    apellidoPaterno
+    apellidoMaterno
+  }
+}
+`;
+
+const GET_DATE = gql`
+{
+  date
+}
+`;
+
 export {
   GET_HABITACION,
-  GET_PRESUPUESTO
+  GET_PRESUPUESTO,
+  GET_CLIENTE,
+  GET_DATE
 }

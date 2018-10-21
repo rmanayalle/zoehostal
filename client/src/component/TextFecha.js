@@ -19,10 +19,10 @@ class TextFecha extends Component {
           type="datetime-local"
           margin="dense"
           onChange={handleChange}
-          defaultValue={dateToPickerStringFormat(fecha)}
           InputLabelProps={{
             shrink: true,
           }}
+          value={dateToPickerStringFormat(fecha)}
           {...props}
         />
     );

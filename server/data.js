@@ -1,4 +1,3 @@
-
 db.habitaciones.insert([
   {
     nombre: "101",

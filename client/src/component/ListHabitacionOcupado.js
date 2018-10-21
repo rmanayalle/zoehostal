@@ -1,6 +1,7 @@
 import React, { Component } from 'react'
 import { withStyles } from '@material-ui/core/styles';
 import { Query } from "react-apollo";
+import { ApolloConsumer } from 'react-apollo'
 
 import List from '@material-ui/core/List';
 import ListItem from '@material-ui/core/ListItem';
@@ -12,6 +13,7 @@ import Avatar from '@material-ui/core/Avatar';
 
 import { withTwoDecimal } from '../util/number'
 import { GET_HABITACION } from '../util/query'
+import DialogInformacion from './DialogInformacion'
 
 function getAvatarClass(tipo, classes){
   let firstLetter = tipo.charAt(0).toUpperCase();
@@ -59,21 +61,21 @@ class ListHabitacionOcupado extends Component {
 
     this.state = {
       showDialog: false,
-      habitacion: null
+      habitacionNombre: null
     };
   }
 
-  handleOpen = (habitacion) => {
+  handleOpen = (habitacionNombre) => {
     this.setState({
       showDialog: true,
-      habitacion: habitacion
+      habitacionNombre: habitacionNombre
     });
   }
 
   handleClose = () => {
     this.setState({
       showDialog: false,
-      habitacion: null
+      habitacionNombre: null
     });
   }
 
@@ -93,26 +95,56 @@ class ListHabitacionOcupado extends Component {
             return (
               <List>
               {
-                data.habitacion.map(habitacion => (
-                  <ListItem key={habitacion.nombre}>
-                    {getAvatarClass(habitacion.tipo, classes)}
-                    <ListItemText
-                      primary={habitacion.nombre}
-                      secondary={habitacion.deuda > 0 && 'S/ ' + withTwoDecimal(habitacion.deuda)}
-                    />
-                    <ListItemSecondaryAction>
-                      <IconButton>
-                        <ViewModule />
-                      </IconButton>
-                    </ListItemSecondaryAction>
-                  </ListItem>
-                ))
+                data.habitacion.map(habitacion => {
+                  let deuda = habitacion.hospedaje.cronologia.totalNeedsToBeCashed - habitacion.hospedaje.pago.total;
+                  return (
+                    <ListItem key={habitacion.nombre}>
+                      {getAvatarClass(habitacion.tipo, classes)}
+                      <ListItemText
+                        primary={habitacion.nombre}
+                        secondary={deuda > 0 && 'S/ ' + withTwoDecimal(deuda)}
+                      />
+                      <ListItemSecondaryAction onClick={() => this.handleOpen(habitacion.nombre)}>
+                        <IconButton>
+                          <ViewModule />
+                        </IconButton>
+                      </ListItemSecondaryAction>
+                    </ListItem>
+                  );
+                })
               }
               </List>
             );
           }
         }
         </Query>
+        {
+          this.state.habitacionNombre !== null && (
+            <Query query={GET_HABITACION} variables={{"habitacion": {"nombre":this.state.habitacionNombre}}} pollInterval={500}>
+            {
+              ({ loading, error, data }) => {
+                if (loading) return <p>Loading...</p>;
+                if (error) return <p>Error :(</p>;
+
+                let habitacion = data.habitacion[0];
+
+                return (
+                  <ApolloConsumer>
+                  {client => (
+                    <DialogInformacion
+                      client={client}
+                      showDialog={this.state.showDialog}
+                      habitacion={habitacion}
+                      handleClose={this.handleClose}
+                    />
+                  )}
+                  </ApolloConsumer>
+                );
+              }
+            }
+            </Query>
+          )
+        }
       </React.Fragment>
     );
   }

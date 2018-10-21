@@ -49,14 +49,15 @@ function toDate(time){
 }
 
 function toLocaleString(date){
+  let dateNow = new Date();
   let dateOptions = {
-    weekday: 'long',
-    year: 'numeric',
-    month: 'short',
-    day: 'numeric',
     hour: 'numeric',
     minute: 'numeric',
-    hour12: true
+    hour12: true,
+    weekday: 'long',
+    year: (dateNow.getFullYear() === date.getFullYear())?undefined:'2-digit',
+    month: 'short',
+    day: 'numeric'
   };
 
   return date.toLocaleString("es-ES", dateOptions);

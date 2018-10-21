@@ -17,7 +17,8 @@ function presupuestar(_tarifa, _checkIn, _checkOut, _fechaInicio, _fechaFinal){
 
   let tarifaPerHour = Math.ceil(_tarifa/24);
 
-  if(_fechaInicio < utilDate.withCheckFormat(_fechaInicio,_checkIn)){
+  // Cobro por horas antes del CheckInt
+  /*if(_fechaInicio < utilDate.withCheckFormat(_fechaInicio,_checkIn)){
     let diffHoursToCheckIn = Math.floor(utilDate.diffHours(_fechaInicio,utilDate.withCheckFormat(_fechaInicio,_checkIn)));
     if(diffHoursToCheckIn > 0){
       let temp = {
@@ -29,10 +30,10 @@ function presupuestar(_tarifa, _checkIn, _checkOut, _fechaInicio, _fechaFinal){
       temp.needsToBeCashed = (dateNowPlus12Hours > temp.fechaInicio);
       presupuesto.detalle.push(temp);
       presupuesto.total += diffHoursToCheckIn*tarifaPerHour;
-      if(temp.needsToBeCashed === true)presupuesto.totalNeedsToBeCashed += presupuesto.total;
+      if(temp.needsToBeCashed === true)presupuesto.totalNeedsToBeCashed += temp.precio;
       _fechaInicio = utilDate.withCheckFormat(_fechaInicio, _checkIn);
     }
-  }
+  }*/
 
   if(utilDate.isSameDay(_fechaInicio,_fechaFinal))_fechaFinal = utilDate.withCheckFormat(utilDate.plusOneDay(_fechaInicio),_checkOut);
 
@@ -46,7 +47,7 @@ function presupuestar(_tarifa, _checkIn, _checkOut, _fechaInicio, _fechaFinal){
     temp.needsToBeCashed = (dateNowPlus12Hours > temp.fechaInicio);
     presupuesto.detalle.push(temp);
     presupuesto.total += _tarifa;
-    if(temp.needsToBeCashed === true)presupuesto.totalNeedsToBeCashed += presupuesto.total;
+    if(temp.needsToBeCashed === true)presupuesto.totalNeedsToBeCashed += temp.precio;
     _fechaInicio = utilDate.withCheckFormat(utilDate.plusOneDay(_fechaInicio), _checkIn);
   }
 
@@ -62,7 +63,7 @@ function presupuestar(_tarifa, _checkIn, _checkOut, _fechaInicio, _fechaFinal){
       temp.needsToBeCashed = (dateNowPlus12Hours > temp.fechaInicio);
       presupuesto.detalle.push(temp);
       presupuesto.total += diffHoursFromCheckOut*tarifaPerHour;
-      if(temp.needsToBeCashed === true)presupuesto.totalNeedsToBeCashed += presupuesto.total;
+      if(temp.needsToBeCashed === true)presupuesto.totalNeedsToBeCashed += temp.precio;
     }
   }
   return presupuesto;
@@ -73,7 +74,7 @@ async function rent(_habitacionNombre, _documentoNacional, _checkIn, _checkOut, 
     let fechaInicio = new Date();
     let presupuesto = presupuestar(habitacion.tarifa, _checkIn, _checkOut, fechaInicio, _fechaFinal);
     habitacion.estado = "ocupado";
-    habitacion.cliente = logicReniec.getClienteFromReniec(_documentoNacional);
+    habitacion.cliente = await logicReniec.getClienteFromReniec(_documentoNacional);
     habitacion.hospedaje = {
       fechaInicio: fechaInicio,
       fechaFinal: _fechaFinal,
@@ -97,7 +98,7 @@ async function pay(_habitacionNombre, _monto){
     habitacion.hospedaje.pago.detalle.push(pagoDetalle);
     habitacion.hospedaje.pago.total += _monto;
     await habitacion.save();
-    return pagoDetalle;
+    return habitacion;
   });
 }
 

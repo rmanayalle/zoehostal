@@ -36,11 +36,14 @@ const styles = theme => ({
     overflowX: 'auto',
   },
   table: {
-    minWidth: 800,
+    minWidth: 700
   },
   cellTotal: {
     borderBottomStyle: 'none',
     paddingTop: 15
+  },
+  cellDivider: {
+    borderTop: '2px inset #b3b3b3'
   },
   row: {
     '&:nth-of-type(odd)': {
@@ -54,7 +57,8 @@ class TablePresupuesto extends Component {
   render(){
     const {
       classes,
-      presupuesto
+      presupuesto,
+      color
     } = this.props;
 
     return (
@@ -69,13 +73,27 @@ class TablePresupuesto extends Component {
           </TableHead>
         <TableBody>
             {
-              presupuesto.detalle.map((item, index) => (
-                <TableRow key={index} className={classes.row}>
-                  <TableCell component="th" scope="row">{toLocaleString(toDate(item.fechaInicio))}</TableCell>
-                  <TableCell>{toLocaleString(toDate(item.fechaFinal))}</TableCell>
-                  <TableCell numeric>{'S/ ' + withTwoDecimal(item.precio)}</TableCell>
-                </TableRow>
-              ))
+              presupuesto.detalle.map((item, index, arr) => {
+                if(
+                  (index !== 0 && arr[index-1].needsToBeCashed != item.needsToBeCashed) ||
+                  (index === 0 && item.needsToBeCashed === false)
+                ){
+                  return (
+                    <TableRow key={index} className={classes.row}>
+                      <TableCell component="th" scope="row" className={classes.cellDivider} style={{borderTopColor: color}}>{toLocaleString(toDate(item.fechaInicio))}</TableCell>
+                      <TableCell className={classes.cellDivider} style={{borderTopColor: color}}>{toLocaleString(toDate(item.fechaFinal))}</TableCell>
+                      <TableCell numeric className={classes.cellDivider} style={{borderTopColor: color}}>{'S/ ' + withTwoDecimal(item.precio)}</TableCell>
+                    </TableRow>
+                  );
+                }
+                else return (
+                  <TableRow key={index} className={classes.row}>
+                    <TableCell component="th" scope="row">{toLocaleString(toDate(item.fechaInicio))}</TableCell>
+                    <TableCell>{toLocaleString(toDate(item.fechaFinal))}</TableCell>
+                    <TableCell numeric>{'S/ ' + withTwoDecimal(item.precio)}</TableCell>
+                  </TableRow>
+                );
+              })
             }
             <TableRow>
               <TableCell className={classes.cellTotal}></TableCell>

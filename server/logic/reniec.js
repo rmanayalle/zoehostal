@@ -1,24 +1,35 @@
-var XMLHttpRequest = require("xmlhttprequest").XMLHttpRequest;
+const axios = require('axios');
+const entityCliente = require('../entity/cliente');
 
-function getClienteFromReniec(documentoNacional)
+async function getClienteFromReniec(documentoNacional)
 {
-  const cliente = {
+  let cliente = {
     documentoNacional: documentoNacional,
     nombre: "",
     apellidoPaterno: "",
     apellidoMaterno: ""
   };
-  const Http = new XMLHttpRequest();
-  Http.onreadystatechange = function() {
-      if (Http.readyState == 4 && Http.status == 200){
-        const array = Http.responseText.split('|');
-        cliente.nombre = array[2].toLowerCase();
-        cliente.apellidoPaterno = array[0].toLowerCase();
-        cliente.apellidoMaterno = array[1].toLowerCase();
+
+  cliente = await entityCliente.model.findOne({documentoNacional: documentoNacional}).exec().then(_cliente => {
+    if(_cliente !== null)return _cliente;
+    return cliente;
+  });
+
+  if(cliente.nombre === ""){
+    axios.defaults.baseURL = 'http://aplicaciones007.jne.gob.pe';
+    return await axios.get('/srop_publico/Consulta/Afiliado/GetNombresCiudadano?DNI=' + documentoNacional)
+    .then(async response => {
+      let arr = response.data.split("|");
+      cliente.apellidoPaterno = arr[0];
+      cliente.apellidoMaterno = arr[1];
+      cliente.nombre = arr[2];
+      if(cliente.nombre !== ""){
+        let nuevoCliente = new entityCliente.model(cliente);
+        await nuevoCliente.save();
       }
+      return cliente;
+    });
   }
-  Http.open("GET", 'http://aplicaciones007.jne.gob.pe/srop_publico/Consulta/Afiliado/GetNombresCiudadano?DNI=' + documentoNacional, false);
-  Http.send();
   return cliente;
 }
 

@@ -16,28 +16,31 @@ mutation rent(
     tarifa
     capacidad
     estado
-    cliente{
+    cliente {
       documentoNacional
       nombre
       apellidoPaterno
       apellidoMaterno
     }
-    hospedaje{
+    hospedaje {
       fechaInicio
       fechaFinal
-      cronologia{
+      cronologia {
         total
         totalNeedsToBeCashed
-        detalle{
+        detalle {
           fechaInicio
           fechaFinal
           precio
           needsToBeCashed
         }
       }
-      pago{
-        fecha
-        monto
+      pago {
+        total
+        detalle {
+          fecha
+          monto
+        }
       }
     }
   }
@@ -53,13 +56,95 @@ mutation pay(
     habitacionNombre: $habitacionNombre,
     monto: $monto
   ){
-    fecha
-    monto
+    nombre
+    tipo
+    tarifa
+    capacidad
+    estado
+    cliente {
+      documentoNacional
+      nombre
+      apellidoPaterno
+      apellidoMaterno
+    }
+    hospedaje {
+      fechaInicio
+      fechaFinal
+      cronologia {
+        total
+        totalNeedsToBeCashed
+        detalle {
+          fechaInicio
+          fechaFinal
+          precio
+          needsToBeCashed
+        }
+      }
+      pago {
+        total
+        detalle {
+          fecha
+          monto
+        }
+      }
+    }
+  }
+}
+`;
+
+const POST_CLIENTE = gql`
+mutation cliente($cliente: ClienteInput!) {
+  cliente(cliente: $cliente) {
+    documentoNacional
+    nombre
+    apellidoPaterno
+    apellidoMaterno
+  }
+}
+`;
+
+const POST_FECHA_FINAL = gql`
+mutation fechaFinal($habitacionNombre: String!, $fechaFinal: Date!) {
+  fechaFinal(habitacionNombre: $habitacionNombre, fechaFinal: $fechaFinal) {
+    nombre
+    tipo
+    tarifa
+    capacidad
+    estado
+    cliente {
+      documentoNacional
+      nombre
+      apellidoPaterno
+      apellidoMaterno
+    }
+    hospedaje {
+      fechaInicio
+      fechaFinal
+      cronologia {
+        total
+        totalNeedsToBeCashed
+        detalle {
+          fechaInicio
+          fechaFinal
+          precio
+          needsToBeCashed
+        }
+      }
+      pago {
+        total
+        detalle {
+          fecha
+          monto
+        }
+      }
+    }
   }
 }
 `;
 
 export {
   POST_RENT,
-  POST_PAY
+  POST_PAY,
+  POST_CLIENTE,
+  POST_FECHA_FINAL
 }
