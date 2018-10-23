@@ -142,9 +142,49 @@ mutation fechaFinal($habitacionNombre: String!, $fechaFinal: Date!) {
 }
 `;
 
+const POST_FREE = gql`
+mutation free($habitacionNombre: String!) {
+  free(habitacionNombre: $habitacionNombre) {
+    nombre
+    tipo
+    tarifa
+    capacidad
+    estado
+    cliente {
+      documentoNacional
+      nombre
+      apellidoPaterno
+      apellidoMaterno
+    }
+    hospedaje {
+      fechaInicio
+      fechaFinal
+      cronologia {
+        total
+        totalNeedsToBeCashed
+        detalle {
+          fechaInicio
+          fechaFinal
+          precio
+          needsToBeCashed
+        }
+      }
+      pago {
+        total
+        detalle {
+          fecha
+          monto
+        }
+      }
+    }
+  }
+}
+`;
+
 export {
   POST_RENT,
   POST_PAY,
   POST_CLIENTE,
-  POST_FECHA_FINAL
+  POST_FECHA_FINAL,
+  POST_FREE
 }

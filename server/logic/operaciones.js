@@ -1,5 +1,7 @@
 const utilDate = require('../util/date.js');
+const utilGlobal = require('../util/global.js');
 const entityHabitacion = require('../entity/habitacion');
+const entityHospedaje = require('../entity/hospedaje');
 const logicReniec = require('./reniec');
 
 function presupuestar(_tarifa, _checkIn, _checkOut, _fechaInicio, _fechaFinal){
@@ -16,6 +18,20 @@ function presupuestar(_tarifa, _checkIn, _checkOut, _fechaInicio, _fechaFinal){
 
 
   let tarifaPerHour = Math.ceil(_tarifa/24);
+
+  let diffHours = Math.floor(utilDate.diffHours(_fechaInicio,_fechaFinal));
+
+  if(diffHours <= 4){
+    presupuesto.total = 30,
+    presupuesto.totalNeedsToBeCashed = 30,
+    presupuesto.detalle.push({
+      fechaInicio: _fechaInicio,
+      fechaFinal: _fechaFinal,
+      precio: 30,
+      needsToBeCashed: true
+    });
+    return presupuesto;
+  }
 
   // Cobro por horas antes del CheckInt
   /*if(_fechaInicio < utilDate.withCheckFormat(_fechaInicio,_checkIn)){
@@ -102,8 +118,39 @@ async function pay(_habitacionNombre, _monto){
   });
 }
 
+async function free(_habitacionNombre){
+  return await entityHabitacion.model.findOne({"nombre": _habitacionNombre}).then(async habitacion => {
+    let fechaInicio = habitacion.hospedaje.fechaInicio;
+    let fechaFinal = new Date();
+    let presupuesto = null;
+    presupuesto = presupuestar(habitacion.tarifa, utilGlobal.checkIn, utilGlobal.checkOut, fechaInicio, fechaFinal);
+
+    let hospedaje = new entityHospedaje.model({
+      nombre: habitacion.nombre,
+      tipo: habitacion.tipo,
+      tarifa: habitacion.tarifa,
+      capacidad: habitacion.capacidad,
+      cliente: habitacion.cliente,
+      hospedaje: {
+        fechaInicio: fechaInicio,
+        fechaFinal: fechaFinal,
+        cronologia: presupuesto,
+        pago: habitacion.hospedaje.pago
+      }
+    });
+
+    habitacion.cliente = null;
+    habitacion.hospedaje = null;
+    habitacion.estado = "disponible";
+    await hospedaje.save();
+    await habitacion.save();
+    return habitacion;
+  });
+}
+
 module.exports = {
   presupuestar,
   rent,
-  pay
+  pay,
+  free
 };

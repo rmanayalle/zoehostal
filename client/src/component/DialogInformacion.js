@@ -14,9 +14,11 @@ import TextFecha from './TextFecha'
 import { GET_PRESUPUESTO, GET_DATE } from '../util/query'
 import SaveIcon from '@material-ui/icons/Save'
 import CloseIcon from '@material-ui/icons/Close'
+import NavigateNextIcon from '@material-ui/icons/NavigateNext'
+import NavigateBeforeIcon from '@material-ui/icons/NavigateBefore'
 import { Query } from "react-apollo"
 import { toLocaleString } from '../util/date'
-import { POST_FECHA_FINAL } from '../util/mutation'
+import { POST_FECHA_FINAL, POST_FREE } from '../util/mutation'
 import { Mutation } from "react-apollo"
 
 
@@ -107,33 +109,35 @@ class DialogInformacion extends Component {
       fechaFinal: new Date(this.props.habitacion.hospedaje.fechaFinal),
       presupuesto: null,
       showOptions: false,
-      dateNow: null
+      date: null,
+      isLiberar: false
     };
 
   }
 
   componentDidMount() {
-    this.timerID = setInterval(
-      () => this.fetchAndUpdateDateNow(),
+    this.timerUpdateDate = setInterval(
+      async () => await this.fetchAndUpdateDate(),
       500
     );
 
     this.timerUpdateTextFechaFinalID = setInterval(
-      () => this.tick(),
+      async () => await this.tick(),
       500
     );
   }
 
   componentWillUnmount() {
-    clearInterval(this.timerID);
+    clearInterval(this.timerUpdateDate);
     clearInterval(this.timerUpdateTextFechaFinalID);
+    clearInterval(this.timerLiberarID);
   }
 
-  tick() {
-    this.setState({
+  async tick() {
+    await this.setState({
       fechaFinal: new Date(this.props.habitacion.hospedaje.fechaFinal)
-    }, () => {
-      this.fetchAndUpdatePresupuesto();
+    }, async () => {
+      await this.fetchAndUpdatePresupuesto();
     });
   }
 
@@ -150,8 +154,8 @@ class DialogInformacion extends Component {
         0
       ),
       showOptions: true
-    }, () => {
-      this.fetchAndUpdatePresupuesto();
+    }, async () => {
+      await this.fetchAndUpdatePresupuesto();
     });
   }
 
@@ -163,14 +167,15 @@ class DialogInformacion extends Component {
         tarifa: this.props.habitacion.tarifa,
         fechaInicio: this.props.habitacion.hospedaje.fechaInicio,
         fechaFinal: this.state.fechaFinal
-      }
+      },
+      fetchPolicy: 'no-cache'
     });
     this.setState({
       presupuesto: data.presupuesto
     });
   }
 
-  fetchAndUpdateDateNow = async () => {
+  fetchAndUpdateDate = async () => {
     const { client } = this.props;
     const { data } = await client.query({
       query: GET_DATE,
@@ -178,7 +183,7 @@ class DialogInformacion extends Component {
     });
     let auxDate = new Date(data.date);
     this.setState({
-      dateNow: new Date(
+      date: new Date(
         auxDate.getFullYear(),
         auxDate.getMonth(),
         auxDate.getDate(),
@@ -194,11 +199,11 @@ class DialogInformacion extends Component {
       showOptions: false,
       presupuesto: null,
       fechaFinal: new Date(this.props.habitacion.hospedaje.fechaFinal)
-    }, () => {
-      this.fetchAndUpdatePresupuesto();
+    }, async () => {
+      await this.fetchAndUpdatePresupuesto();
     });
     this.timerUpdateTextFechaFinalID = setInterval(
-      () => this.tick(),
+      async () => await this.tick(),
       500
     );
   }
@@ -208,9 +213,9 @@ class DialogInformacion extends Component {
       showOptions: false,
       presupuesto: null
     });
-    this.timerID = setInterval(
-      () => this.tick(),
-      1000
+    this.timerUpdateTextFechaFinalID = setInterval(
+      async () => await this.tick(),
+      500
     );
   }
 
@@ -238,6 +243,88 @@ class DialogInformacion extends Component {
         </Button>
       )}
       </Mutation>
+    );
+  }
+
+  free = () => {
+    return (
+      <Mutation
+        mutation={POST_FREE}
+      >
+      {(funcFree, { data }) => (
+        <Button
+          onClick={null}
+          color="primary"
+          onClick={e => {
+            e.preventDefault();
+            funcFree({ variables: {
+              "habitacionNombre": this.props.habitacion.nombre
+            }});
+            this.props.handleClose();
+          }}
+        >
+
+          Finalizar
+        </Button>
+      )}
+      </Mutation>
+    );
+  }
+
+  handleLiberar = async () => {
+    clearInterval(this.timerUpdateTextFechaFinalID);
+    const { client } = this.props;
+    const { data } = await client.query({
+      query: GET_PRESUPUESTO,
+      variables: {
+        tarifa: this.props.habitacion.tarifa,
+        fechaInicio: this.props.habitacion.hospedaje.fechaInicio,
+        fechaFinal: this.state.date
+      },
+      fetchPolicy: 'no-cache'
+    });
+    await this.setState({
+      presupuesto: data.presupuesto
+    });
+
+    await this.setState({
+      isLiberar: true,
+      showOptions: false
+    }, () => {
+      this.timerLiberarID = setInterval(
+        async () => {
+          const { client } = this.props;
+          const { data } = await client.query({
+            query: GET_PRESUPUESTO,
+            variables: {
+              tarifa: this.props.habitacion.tarifa,
+              fechaInicio: this.props.habitacion.hospedaje.fechaInicio,
+              fechaFinal: this.state.date
+            },
+            fetchPolicy: 'no-cache'
+          });
+          await this.setState({
+            presupuesto: data.presupuesto
+          });
+        },
+        500
+      );
+    });
+
+  }
+
+  handleLiberarClose = async () => {
+    clearInterval(this.timerLiberarID);
+    await this.setState({
+      isLiberar: false,
+      presupuesto: null,
+      fechaFinal: new Date(this.props.habitacion.hospedaje.fechaFinal)
+    }, async () => {
+      await this.fetchAndUpdatePresupuesto();
+    });
+    this.timerUpdateTextFechaFinalID = setInterval(
+      async () => await this.tick(),
+      500
     );
   }
 
@@ -284,19 +371,24 @@ class DialogInformacion extends Component {
             <Typography variant="display1" gutterBottom>
               {capitalize(cliente.nombre + " " + cliente.apellidoPaterno + " " + cliente.apellidoMaterno)}
             </Typography>
-            <TextFecha
-              style={{width: 200, marginTop: 10, marginBottom: 10}}
-              label="Fecha y Hora de Salida"
-              handleChange={this.handleFechaFinal}
-              fecha={this.state.fechaFinal}
-            />
 
             {
-              this.state.showOptions === true && (
+              this.state.isLiberar === false && (
+                <TextFecha
+                  style={{width: 200, marginTop: 10, marginBottom: 10}}
+                  label="Fecha y Hora de Salida"
+                  handleChange={this.handleFechaFinal}
+                  fecha={this.state.fechaFinal}
+                />
+              )
+            }
+
+            {
+              this.state.isLiberar === false && this.state.showOptions === true && (
                 <React.Fragment>
 
                   {
-                    this.state.dateNow !== null && this.state.fechaFinal > this.state.dateNow && this.saveFechaFinal()
+                    this.state.date !== null && this.state.fechaFinal > this.state.date && this.saveFechaFinal()
                   }
 
                   <Button variant="fab" mini color="secondary" className={classes.button} onClick={this.closeEdit}>
@@ -320,13 +412,41 @@ class DialogInformacion extends Component {
 
         </DialogContent>
         <DialogActions>
-          <Button
-            onClick={handleClose}
-            color="secondary">
+        {
+          this.state.isLiberar === false && (
+            <Button
+              onClick={handleClose}
+              color="secondary">
 
-            Salir
+              Salir
 
-          </Button>
+            </Button>
+          )
+        }
+        {
+          this.state.isLiberar === true && (
+            <Button
+              onClick={this.handleLiberarClose}
+              color="secondary">
+              <NavigateBeforeIcon />
+              Atrás
+            </Button>
+          )
+        }
+        {
+          this.state.isLiberar === false && (
+            <Button
+              onClick={this.handleLiberar}
+              color="primary">
+
+              Liberar
+              <NavigateNextIcon />
+            </Button>
+          )
+        }
+        {
+          this.state.isLiberar === true && this.free()
+        }
         </DialogActions>
       </Dialog>
       </React.Fragment>

@@ -20,6 +20,7 @@ const rootMutation = `
     pay(habitacionNombre: String, monto: Float!): Habitacion
     cliente(cliente: ClienteInput!): Cliente
     fechaFinal(habitacionNombre: String!, fechaFinal: Date!): Habitacion
+    free(habitacionNombre: String!): Habitacion
   }
 `;
 
@@ -50,6 +51,9 @@ const resolvers = {
     },
     fechaFinal(obj, args, context, info){
       return logicHabitacion.setFechaFinal(args.habitacionNombre, args.fechaFinal);
+    },
+    free(obj, args, context, info){
+      return logicOperaciones.free(args.habitacionNombre);
     }
   },
   Date: scalarDate.type

@@ -21,6 +21,12 @@ import EditIcon from '@material-ui/icons/Edit'
 import PersonAddIcon from '@material-ui/icons/PersonAdd'
 import Chip from '@material-ui/core/Chip'
 import DialogRegistroCliente from './DialogRegistroCliente'
+import Checkbox from '@material-ui/core/Checkbox'
+import AlarmIcon from '@material-ui/icons/Alarm'
+import AlarmOnIcon from '@material-ui/icons/AlarmOn'
+import Tooltip from '@material-ui/core/Tooltip';
+import Zoom from '@material-ui/core/Zoom';
+
 
 function getAvatarClass(habitacionTipo, classes){
   let firstLetter = habitacionTipo.charAt(0).toUpperCase();
@@ -109,7 +115,9 @@ class DialogRegistro extends Component {
       enabledDocumentoNacional: true,
       nombreCliente: null,
       fechaFinal: withCheckFormat(plusOneDay(new Date()), this.props.checkOut),
-      presupuesto : null
+      presupuesto : null,
+      plus4Hours: false,
+      enabledTextFechaFinal: true
     };
 
     this.fetchAndUpdatePresupuesto();
@@ -124,6 +132,7 @@ class DialogRegistro extends Component {
 
   componentWillUnmount() {
     clearInterval(this.timerID);
+    clearInterval(this.timerPlus4HoursID);
   }
 
   tick() {
@@ -142,6 +151,35 @@ class DialogRegistro extends Component {
             this.fetchNombre();
           });
       });
+
+  }
+
+  handlePlus4Hours = () => {
+    this.setState({
+      plus4Hours: !this.state.plus4Hours,
+      enabledTextFechaFinal: !this.state.enabledTextFechaFinal
+    }, async () => {
+      if(this.state.enabledTextFechaFinal === false){
+        this.timerPlus4HoursID = setInterval(
+          async () => {
+            let dateNow = new Date();
+            let datePlus4 = new Date(dateNow.getTime() + 4*60*60*1000);
+            await this.setState({
+              fechaFinal: datePlus4
+            });
+          },
+          500
+        );
+      }
+      else {
+        await this.setState({
+          fechaFinal: withCheckFormat(plusOneDay(new Date()), this.props.checkOut)
+        });
+        clearInterval(this.timerPlus4HoursID);
+      }
+    });
+
+
 
   }
 
@@ -326,7 +364,16 @@ class DialogRegistro extends Component {
                 label="Fecha y Hora de Salida"
                 fecha={this.state.fechaFinal}
                 handleChange={this.handleFechaFinal}
+                disabled={!this.state.enabledTextFechaFinal}
               />
+              <Tooltip title="+ 4 horas" placement="right" TransitionComponent={Zoom}>
+              <Checkbox
+                checked={this.state.plus4Hours}
+                onChange={this.handlePlus4Hours}
+                icon={<AlarmIcon />}
+                checkedIcon={<AlarmOnIcon />}
+              />
+              </Tooltip>
             </div>
             {
               this.state.presupuesto !== null && (

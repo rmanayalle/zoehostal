@@ -20,7 +20,7 @@ class DialogPay extends React.Component {
     super(props);
 
     this.state = {
-      amount: this.props.initAmount
+      amount: ""
     };
   }
 
@@ -42,7 +42,7 @@ class DialogPay extends React.Component {
                 e.preventDefault();
                 funcPay({ variables: {
                   "habitacionNombre": this.props.habitacionNombre,
-                  "monto": parseFloat(this.state.amount)
+                  "monto": (this.state.amount > 0)?parseFloat(this.state.amount):0
                 } });
 
                 this.props.handleClose();
