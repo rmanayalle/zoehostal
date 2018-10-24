@@ -345,18 +345,18 @@ class DialogInformacion extends Component {
 
     return (
       <React.Fragment>
-      <Dialog
-        maxWidth="md"
-        scroll="body"
-        open={showDialog}
-        onClose={handleClose}
-        aria-labelledby="form-dialog-title"
-        classes={{
-          paperWidthMd: classes.paperWidthMd
-        }}
-      >
-        <DialogContent>
-          <div style={{textAlign: 'center'}}>
+        <Dialog
+          maxWidth="md"
+          scroll="body"
+          open={showDialog}
+          onClose={handleClose}
+          aria-labelledby="form-dialog-title"
+          classes={{
+            paperWidthMd: classes.paperWidthMd
+          }}
+        >
+          <DialogContent>
+            <div style={{textAlign: 'center'}}>
 
             <br/>
             {

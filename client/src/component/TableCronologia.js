@@ -122,7 +122,7 @@ class TableCronologia extends Component {
               <TableCellHeadText numeric>Precio</TableCellHeadText>
             </TableRow>
           </TableHead>
-        <TableBody>
+          <TableBody>
             {
               cronologia.map((item, index, arr) => {
                 if(item.needsToBeCashed === true || this.state.showNotNeedsToBeCashed === true){
@@ -151,16 +151,16 @@ class TableCronologia extends Component {
             <TableRow>
               <TableCell className={classes.cellExpand}></TableCell>
               <TableCell className={classes.cellExpand}>
-              {
-                showExpand === true && (
-                  <Checkbox
-                    checked={this.state.showNotNeedsToBeCashed}
-                    onChange={this.handleToggle}
-                    icon={<ExpandMoreIcon />}
-                    checkedIcon={<ExpandLessIcon />}
-                  />
-                )
-              }
+                {
+                  showExpand === true && (
+                    <Checkbox
+                      checked={this.state.showNotNeedsToBeCashed}
+                      onChange={this.handleToggle}
+                      icon={<ExpandMoreIcon />}
+                      checkedIcon={<ExpandLessIcon />}
+                    />
+                  )
+                }
               </TableCell>
               <TableCell className={classes.cellExpand}>
               </TableCell>
@@ -176,9 +176,9 @@ class TableCronologia extends Component {
             <TableRow>
               <TableCell className={classes.cellTotal}></TableCell>
               <TableCellTotalText numeric className={classes.cellTotal}>
-              <Button variant="fab" mini color="primary" className={classes.button} onClick={this.handleOpen}>
-                <PaymentIcon />
-              </Button>
+                <Button variant="fab" mini color="primary" className={classes.button} onClick={this.handleOpen}>
+                  <PaymentIcon />
+                </Button>
                 A Cuenta
               </TableCellTotalText>
               <TableCellTotalMount numeric className={classes.cellTotal}>{'S/ ' + withTwoDecimal(pagoTotal)}</TableCellTotalMount>

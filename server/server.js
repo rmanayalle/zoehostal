@@ -6,6 +6,7 @@ const _index = require('./graphql/index');
 const typeHabitacion = require('./graphql/type/habitacion');
 const typeCliente = require('./graphql/type/cliente');
 const typePresupuesto = require('./graphql/type/presupuesto');
+const typeCaja = require('./graphql/type/caja');
 
 const db = mongoose();
 
@@ -20,6 +21,7 @@ const server = new ApolloServer({
     typeHabitacion.type,
     typeCliente.type,
     typePresupuesto.type,
+    typeCaja.type,
 
   ],
   resolvers: _index.resolvers

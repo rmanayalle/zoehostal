@@ -79,9 +79,43 @@ const GET_DATE = gql`
 }
 `;
 
+const GET_CAJA = gql`
+query caja($isClosed: Boolean!) {
+  caja(isClosed: $isClosed) {
+    isClosed
+    fecha
+    inicial
+    historia {
+      total
+      hospedaje {
+        fecha
+        monto
+        habitacion {
+          nombre
+          tipo
+          tarifa
+        }
+        cliente {
+          documentoNacional
+          nombre
+          apellidoPaterno
+          apellidoMaterno
+        }
+      }
+      otro {
+        fecha
+        monto
+        asunto
+      }
+    }
+  }
+}
+`;
+
 export {
   GET_HABITACION,
   GET_PRESUPUESTO,
   GET_CLIENTE,
-  GET_DATE
+  GET_DATE,
+  GET_CAJA
 }

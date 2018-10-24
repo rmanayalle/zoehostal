@@ -1,7 +1,9 @@
 
 function capitalize(string)
 {
-    return string.toLowerCase().replace( /\b./g, function(a){ return a.toUpperCase(); } );
+  return string.replace(/\w\S*/g, function(txt){
+      return txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase();
+  });
 }
 
 

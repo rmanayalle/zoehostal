@@ -181,10 +181,79 @@ mutation free($habitacionNombre: String!) {
 }
 `;
 
+
+const POST_NUEVA_CAJA = gql`
+mutation nuevaCaja($monto: Float!) {
+  nuevaCaja(monto: $monto) {
+    isClosed
+    fecha
+    inicial
+    historia {
+      total
+      hospedaje {
+        fecha
+        monto
+        habitacion {
+          nombre
+          tipo
+          tarifa
+        }
+        cliente {
+          documentoNacional
+          nombre
+          apellidoPaterno
+          apellidoMaterno
+        }
+      }
+      otro {
+        fecha
+        monto
+        asunto
+      }
+    }
+  }
+}
+`;
+
+const POST_ADD_CAJA_OTRO = gql`
+mutation addCajaOtro($monto: Float!, $asunto: String!) {
+  addCajaOtro(monto: $monto, asunto: $asunto) {
+    isClosed
+    fecha
+    inicial
+    historia {
+      total
+      hospedaje {
+        fecha
+        monto
+        habitacion {
+          nombre
+          tipo
+          tarifa
+        }
+        cliente {
+          documentoNacional
+          nombre
+          apellidoPaterno
+          apellidoMaterno
+        }
+      }
+      otro {
+        fecha
+        monto
+        asunto
+      }
+    }
+  }
+}
+`;
+
 export {
   POST_RENT,
   POST_PAY,
   POST_CLIENTE,
   POST_FECHA_FINAL,
-  POST_FREE
+  POST_FREE,
+  POST_NUEVA_CAJA,
+  POST_ADD_CAJA_OTRO
 }

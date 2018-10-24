@@ -3,6 +3,7 @@ const utilGlobal = require('../util/global.js');
 const entityHabitacion = require('../entity/habitacion');
 const entityHospedaje = require('../entity/hospedaje');
 const logicReniec = require('./reniec');
+const logicCaja = require('./caja');
 
 function presupuestar(_tarifa, _checkIn, _checkOut, _fechaInicio, _fechaFinal){
   let dateNowPlus12Hours = new Date();
@@ -33,7 +34,7 @@ function presupuestar(_tarifa, _checkIn, _checkOut, _fechaInicio, _fechaFinal){
     return presupuesto;
   }
 
-  // Cobro por horas antes del CheckInt
+  // Cobro por horas antes del CheckIn
   /*if(_fechaInicio < utilDate.withCheckFormat(_fechaInicio,_checkIn)){
     let diffHoursToCheckIn = Math.floor(utilDate.diffHours(_fechaInicio,utilDate.withCheckFormat(_fechaInicio,_checkIn)));
     if(diffHoursToCheckIn > 0){
@@ -113,6 +114,8 @@ async function pay(_habitacionNombre, _monto){
     };
     habitacion.hospedaje.pago.detalle.push(pagoDetalle);
     habitacion.hospedaje.pago.total += _monto;
+
+    await logicCaja.addCajaHabitacion(_monto, habitacion, habitacion.cliente);
     await habitacion.save();
     return habitacion;
   });

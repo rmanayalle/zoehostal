@@ -87,32 +87,32 @@ class ListHabitacionDisponible extends Component {
     return (
       <React.Fragment>
         <Query query={GET_HABITACION} variables={{"habitacion":{"estado":"disponible"}}} pollInterval={500}>
-        {
-          ({ loading, error, data }) => {
-            if (loading) return <p>Loading...</p>;
-            if (error) return <p>Error :(</p>;
-            return (
-              <List>
-              {
-                data.habitacion.map(habitacion => (
-                  <ListItem key={habitacion.nombre}>
-                    {getAvatarClass(habitacion.tipo, classes)}
-                    <ListItemText
-                      primary={habitacion.nombre}
-                      secondary={'S/ ' + withTwoDecimal(habitacion.tarifa)}
-                    />
-                    <ListItemSecondaryAction>
-                      <IconButton onClick={() => this.handleOpen(habitacion)}>
-                        <PersonAdd />
-                      </IconButton>
-                    </ListItemSecondaryAction>
-                  </ListItem>
-                ))
-              }
-              </List>
-            );
+          {
+            ({ loading, error, data }) => {
+              if (loading) return <p>Loading...</p>;
+              if (error) return <p>Error :(</p>;
+              return (
+                <List>
+                  {
+                    data.habitacion.map(habitacion => (
+                      <ListItem key={habitacion.nombre}>
+                        {getAvatarClass(habitacion.tipo, classes)}
+                        <ListItemText
+                          primary={habitacion.nombre}
+                          secondary={'S/ ' + withTwoDecimal(habitacion.tarifa)}
+                        />
+                        <ListItemSecondaryAction>
+                          <IconButton onClick={() => this.handleOpen(habitacion)}>
+                            <PersonAdd />
+                          </IconButton>
+                        </ListItemSecondaryAction>
+                      </ListItem>
+                    ))
+                  }
+                </List>
+              );
+            }
           }
-        }
         </Query>
         <ApolloConsumer>
         {client => (

@@ -7,6 +7,7 @@ import Typography from '@material-ui/core/Typography';
 
 import ListHabitacionDisponible from './component/ListHabitacionDisponible'
 import ListHabitacionOcupado from './component/ListHabitacionOcupado'
+import ListCaja from './component/ListCaja'
 
 const client = new ApolloClient({
   uri: "http://localhost:4000/"
@@ -44,6 +45,12 @@ class App extends Component {
               Ocupado
             </Typography>
             <ListHabitacionOcupado />
+          </Paper>
+          <Paper className={classes.paper}>
+            <Typography variant="headline" component="h3" style={{fontWeight: 200}}>
+              Caja
+            </Typography>
+            <ListCaja />
           </Paper>
         </ApolloProvider>
       </React.Fragment>

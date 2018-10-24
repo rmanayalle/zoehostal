@@ -3,6 +3,7 @@ const logicCliente = require('../logic/cliente');
 const logicHabitacion = require('../logic/habitacion');
 const logicOperaciones = require('../logic/operaciones');
 const logicReniec = require('../logic/reniec');
+const logicCaja = require('../logic/caja');
 const utilGlobal = require('../util/global');
 
 const rootQuery = `
@@ -11,6 +12,7 @@ const rootQuery = `
     presupuesto(tarifa: Float!, fechaFinal: Date!, fechaInicio: Date): Presupuesto
     cliente(documentoNacional: String!): Cliente
     date: Date
+    caja(isClosed: Boolean!): [Caja]
   }
 `;
 
@@ -21,6 +23,8 @@ const rootMutation = `
     cliente(cliente: ClienteInput!): Cliente
     fechaFinal(habitacionNombre: String!, fechaFinal: Date!): Habitacion
     free(habitacionNombre: String!): Habitacion
+    nuevaCaja(monto: Float!): Caja
+    addCajaOtro(monto: Float!, asunto: String!): Caja
   }
 `;
 
@@ -36,6 +40,9 @@ const resolvers = {
     },
     cliente(obj, args, context, info){
       return logicReniec.getClienteFromReniec(args.documentoNacional);
+    },
+    caja(obj, args, context, info){
+      return logicCaja.getCaja(args.isClosed);
     },
     date: () => new Date
   },
@@ -54,6 +61,12 @@ const resolvers = {
     },
     free(obj, args, context, info){
       return logicOperaciones.free(args.habitacionNombre);
+    },
+    nuevaCaja(obj, args, context, info){
+      return logicCaja.nuevaCaja(args.monto);
+    },
+    addCajaOtro(obj, args, context, info){
+      return logicCaja.addCajaOtro(args.monto, args.asunto);
     }
   },
   Date: scalarDate.type
